@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create a custom IAM role to allow Cross Account access to AmericanChip Lambda Scanner Service
+Parameters:
+  IAMRoleName:
+    Type: String
+    Default: AmericanChipRoleCrossAccount
+    Description: "Insert the name of the IAM Role"
+Resources:
+  ACROLE:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::817091419779:root
+            Action: sts:AssumeRole
+            Condition: {}
+      Path: /
+      Policies:
+        - PolicyName: { "Fn::Join": ["-", [!Ref IAMRoleName, "Policy"]] }
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ssm:SendCommand
+                  - ssm:ListCommands
+                  - ssm:ListCommandInvocations
+                  - ec2:DescribeInstances
+                  - ssm:DescribeInstanceProperties
+                  - ssm:GetInventory
+                  - ssm:GetDocument
+                  - ssm:DescribeDocument
+                  - ssm:ListDocumentVersions
+                Resource:
+                  - !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*"
+                  - arn:aws:ssm:us-east-1::document/AWS-RunShellScript
